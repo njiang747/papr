@@ -39,11 +39,12 @@ class Line:
 class Quad:
     # create a quadrilateral from a list of points in arbitrary order
     def __init__(self, points):
-        sorted(points, key=lambda p: p[0])
+        points = sorted(points, key=lambda p: p[0])
+
         left = points[:2]
         right = points[2:]
-        sorted(left, key=lambda p: p[1])
-        sorted(right, key=lambda p: p[1])
+        left = sorted(left, key=lambda p: p[1])
+        right = sorted(right, key=lambda p: p[1])
         self.points = [left[0], right[0], left[1], right[1]]  # tl, tr, bl, br
         l_top = Line(left[0], right[0])
         l_right = Line(right[1], right[0])
@@ -52,7 +53,7 @@ class Quad:
         self.lines = [l_top, l_bottom, l_left, l_right]  # top, bottom, left, right
 
     def get_points(self):
-        return np.array([self.points[0], self.points[2], self.points[1], self.points[3]])
+        return np.array([self.points[0], self.points[1], self.points[3], self.points[2]])
 
     # returns true if p is in the quadrilateral
     def contains(self, p):
@@ -80,15 +81,17 @@ class Quad:
     def convert(self, p):
         f_y = self.frac(p, self.lines[0], self.lines[1], 0.0, 1.0)
         f_x = self.frac(p, self.lines[2], self.lines[3], 0.0, 1.0)
-        return f_x, f_y
+        return f_x, 1-f_y
 
 
 
 # test code
-# a1 = (100, 0)
-# a2 = (0, 300)
-# a3 = (500, 0)
-# a4 = (600, 300)
-# a5 = (100, 150)
+# a1 = (1188, 613)
+# a2 = (351, 268)
+# a3 = (965, 266)
+# a4 = (142, 608)
+# a5 = (1181, 608)
 # q = Quad([a1, a2, a3, a4])
+# for point in q.points:
+#     print point
 # print q.convert(a5)
