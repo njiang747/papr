@@ -24,7 +24,7 @@ def l_avg(l1, l2):
 class Line:
     # create a line from 2 points
     def __init__(self, point1, point2):
-        self.slope = (point2[1] - point1[1]) / (point2[0] - point1[0] + 0.00001)
+        self.slope = (point2[1] - point1[1]) / (point2[0] - point1[0] + 0.1)
         self.points = [point1, point2]
 
     # returns the distance from the line to a point
