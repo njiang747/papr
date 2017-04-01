@@ -1,1 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
+
+#Jon's test files to ignore
+image_analysis.py
+hand_detection.py
+finger.py
+draw_frame.py
