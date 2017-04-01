@@ -14,7 +14,7 @@ while(True):
     edges = cv2.Canny(thresh, 50, 200)
     (contours, _) = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    if len(contours) > 0 and len(contours) < 5:
+    if 0 < len(contours) < 5:
         contour = max(contours, key=len)
 
     if len(contour):
