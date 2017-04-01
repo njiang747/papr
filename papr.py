@@ -4,8 +4,14 @@ import numpy as np
 cap = cv2.VideoCapture(0)
 screenCnt = np.array([])
 k_thresh = 140 # adjust for lighting
+
 bg_thresh = None
+
+# track when paper has stabilized
 counter = 0
+counter_thresh = 6
+gap_counter = 0
+gap_thresh = 3
 
 while(True):
     ret,img = cap.read()
@@ -18,7 +24,6 @@ while(True):
     (contours, _) = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     cnts = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
 
-    t_counter = 0
     # loop over our contours
     for c in cnts:
         # approximate the contour
@@ -28,12 +33,17 @@ while(True):
         # if our approximated contour has four points, then
         # we can assume that we have found our paper
         if len(approx) == 4 and peri > 1500 and area > 50000:
-            t_counter = counter+1
-            screenCnt = approx
+            counter += 1
+            gap_counter = 0
+            if counter >= counter_thresh:
+                print "STABILIZED"
+                counter = 0
+                screenCnt = approx
             break
 
-    counter = t_counter
-    print counter
+    gap_counter += 1
+    if gap_counter >= gap_thresh:
+        counter = 0
 
     # Draw red circles highlighting the corners
     for point in screenCnt:
