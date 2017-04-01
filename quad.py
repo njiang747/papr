@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 # distance between 2 points
@@ -50,6 +51,9 @@ class Quad:
         l_left = Line(left[1], left[0])
         self.lines = [l_top, l_bottom, l_left, l_right]  # top, bottom, left, right
 
+    def get_points(self):
+        return np.array([self.points[0], self.points[2], self.points[1], self.points[3]])
+
     # returns true if p is in the quadrilateral
     def contains(self, p):
         return self.lines[0].l2p_dist(p) > 0 and self.lines[1].l2p_dist(p) < 0 and \
@@ -78,11 +82,13 @@ class Quad:
         f_x = self.frac(p, self.lines[2], self.lines[3], 0.0, 1.0)
         return f_x, f_y
 
+
+
 # test code
-a1 = (100, 0)
-a2 = (0, 300)
-a3 = (500, 0)
-a4 = (600, 300)
-a5 = (100, 150)
-q = Quad([a1, a2, a3, a4])
-print q.convert(a5)
+# a1 = (100, 0)
+# a2 = (0, 300)
+# a3 = (500, 0)
+# a4 = (600, 300)
+# a5 = (100, 150)
+# q = Quad([a1, a2, a3, a4])
+# print q.convert(a5)

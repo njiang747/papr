@@ -1,17 +1,18 @@
 import cv2
 import numpy as np
+import quad
 
 cap = cv2.VideoCapture(0)
 screenCnt = np.array([])
 k_thresh = 140 # adjust for lighting
-
-bg_thresh = None
 
 # track when paper has stabilized
 counter = 0
 counter_thresh = 6
 gap_counter = 0
 gap_thresh = 3
+bg_thresh = None
+ppr_quad = None
 
 while(True):
     ret,img = cap.read()
@@ -36,9 +37,11 @@ while(True):
             counter += 1
             gap_counter = 0
             if counter >= counter_thresh:
-                print "STABILIZED"
                 counter = 0
                 screenCnt = approx
+                bg_thresh = np.zeros(thresh.shape, dtype=np.uint8)
+                ppr_quad = quad.Quad(map(lambda x: x[0], screenCnt))
+                cv2.fillConvexPoly(bg_thresh, ppr_quad.get_points(), 255)
             break
 
     gap_counter += 1
@@ -51,6 +54,13 @@ while(True):
     # Draw green lines outlining the box
     cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
 
-    cv2.imshow('Frame',img)
+
+    if bg_thresh != None:
+        # cv2.imshow('Frame', bg_thresh)
+        img = cv2.bitwise_and(img, img, mask=bg_thresh)
+        cv2.imshow('Frame',img)
+    else:
+        cv2.imshow('Frame',img)
+
     if cv2.waitKey(1) &0xFF == ord('q'):
         break
