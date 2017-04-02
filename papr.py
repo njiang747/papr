@@ -2,10 +2,11 @@ import cv2
 import numpy as np
 import quad
 import mouse
-
+import ring_buffer
+import math
 
 screen = mouse.screensize()
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 screenCnt = np.array([])
 k_thresh = 125 # adjust for lighting
 
@@ -16,10 +17,18 @@ gap_counter = 0
 gap_thresh = 3
 bg_thresh = None
 ppr_quad = None
-c_pos = (0,0)
 f_thresh2 = None
 k_stable = 0.008
 farthest = (0,0)
+
+# ~~Click detection methods and variables~~ #
+# Method that takes in 2 points and returns the distance between them
+curr_pos = (0,0)
+num_frames = 4
+zero_epsilon = 15
+upper_click_epsilon = 1000
+lower_click_epsilon = 60
+history = ring_buffer.Ring_Buffer(num_frames)
 
 while(True):
     ret,img = cap.read()
@@ -28,7 +37,7 @@ while(True):
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     thresh = cv2.threshold(blurred, k_thresh, 255, cv2.THRESH_BINARY)[1]
     edges = cv2.Canny(thresh, 50, 200)
-    (contours, _) = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    (_,contours, _) = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     cnts = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
 
     # loop over our contours
@@ -76,9 +85,37 @@ while(True):
                 farthest = (xs[idx], ys[idx])
                 # print farthest
                 f_x, f_y = ppr_quad.convert(farthest)
-                mouse.mousemove(int(screen[0]*f_x), int(screen[1]*f_y))
-                # mouse.mouseup(int(screen[0]*f_x), int(screen[1]*f_y))
+                curr_pos = (int(screen[0]*f_x), int(screen[1]*f_y))
+                mouse.mouseup(curr_pos[0], curr_pos[1])
+                mouse.mousemove(curr_pos[0], curr_pos[1])
                 # mouse.mousedown(int(screen[0]*f_x), int(screen[1]*f_y))
+
+                # Check for click
+                found_0 = False
+                found_0_pos = -1111111
+                found_up = False
+                for elem in np.roll(history.array, -history.head, axis=0):
+                    dist = quad.p2p_dist(elem, curr_pos)
+                    if dist < zero_epsilon:
+                        if not found_0:
+                            found_0 = True
+                            found_0_pos = elem
+                    if found_0 and lower_click_epsilon < dist < upper_click_epsilon:
+                        found_up = True
+                if found_0 and found_up:
+                    print "CLICK FOUNDDD"
+                    history.print_me()
+                    print curr_pos
+                    print "=========="
+                    mouse.mousedown(found_0_pos[0],found_0_pos[1])
+                    # print "Clicking at: %s" %(found_0_pos[0])
+                    history.clear()
+                    # mouse.up(int(screen[0]*f_x), int(screen[1]*f_y))
+                # else:
+                #     print "NO CLICK FOUNDDD"
+                # Update history queue
+        history.enqueue(curr_pos)
+        # print(curr_pos)
         # draw the fingertip
         cv2.circle(img, farthest, 5, (0, 255, 0), 3)
         cv2.imshow('Frame',img)
