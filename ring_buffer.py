@@ -19,3 +19,6 @@ class Ring_Buffer:
 
     def print_me(self):
         print list(np.roll(self.array, -self.head, axis=0))
+
+    def fast_click(self):
+        return (-10000, -10000) in self.array

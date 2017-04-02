@@ -64,7 +64,7 @@ class Quad:
         l_bottom = Line(left[1], right[1])
         l_left = Line(left[1], left[0])
         # self.lines = [l_top, l_bottom, l_left, l_right]
-        self.lines = [l_avgw(l_top, l_bottom, 0.9), l_avgw(l_bottom, l_top, 0.95), l_avgw(l_left, l_right, 0.95), l_avgw(l_right, l_left, 0.95)]  # top, bottom, left, right
+        self.lines = [l_avgw(l_top, l_bottom, 0.85), l_avgw(l_bottom, l_top, 0.95), l_avgw(l_left, l_right, 0.95), l_avgw(l_right, l_left, 0.95)]  # top, bottom, left, right
 
     def get_points(self):
         return np.array([self.points[0], self.points[1], self.points[3], self.points[2]])
