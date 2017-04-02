@@ -9,10 +9,23 @@ def p2p_dist(p1, p2):
     return math.sqrt(dy * dy + dx * dx)
 
 
+# weighted average of two points
+def p_avgw(p1,p2,w):
+    dx = p2[0] - p1[0]
+    dy = p2[1] - p1[1]
+    return p1[0] + dx * (1-w), p1[1] + dy * (1-w)
+
+
 # average of two points
 def p_avg(p1, p2):
     return (p1[0] + p2[0]) * 0.5, (p1[1] + p2[1]) * 0.5
 
+
+# weighted average of two lines
+def l_avgw(l1,l2,w):
+    p1 = p_avgw(l1.points[0], l2.points[0], w)
+    p2 = p_avgw(l1.points[1], l2.points[1], w)
+    return Line(p1, p2)
 
 # average of two lines
 def l_avg(l1, l2):
@@ -50,7 +63,8 @@ class Quad:
         l_right = Line(right[1], right[0])
         l_bottom = Line(left[1], right[1])
         l_left = Line(left[1], left[0])
-        self.lines = [l_top, l_bottom, l_left, l_right]  # top, bottom, left, right
+        # self.lines = [l_top, l_bottom, l_left, l_right]
+        self.lines = [l_avgw(l_top, l_bottom, 0.9), l_avgw(l_bottom, l_top, 0.95), l_avgw(l_left, l_right, 0.95), l_avgw(l_right, l_left, 0.95)]  # top, bottom, left, right
 
     def get_points(self):
         return np.array([self.points[0], self.points[1], self.points[3], self.points[2]])
@@ -63,8 +77,10 @@ class Quad:
     # recursive function to detect what fraction between lines l1 and l2 the point p is
     def frac(self, p, l1, l2, min_f, max_f):
         # if out of range, return -1
-        if l1.l2p_dist(p) < 0 or l2.l2p_dist(p) > 0:
-            return -1
+        if l1.l2p_dist(p) < 0:
+            return 0
+        if l2.l2p_dist(p) > 0:
+            return 1
         # if close enough, return fraction
         l3 = l_avg(l1, l2)
         g = l3.l2p_dist(p)
@@ -84,14 +100,14 @@ class Quad:
         return f_x, 1-f_y
 
 
-
-# test code
-# a1 = (1188, 613)
-# a2 = (351, 268)
-# a3 = (965, 266)
-# a4 = (142, 608)
-# a5 = (1181, 608)
+#
+# a1 = (0, 0)
+# a2 = (0, 100)
+# a3 = (100, 0)
+# a4 = (100, 100)
+# a5 = (50, 50)
 # q = Quad([a1, a2, a3, a4])
-# for point in q.points:
-#     print point
-# print q.convert(a5)
+# # for point in q.points:
+# #     print point
+# # print q.convert(a5)
+# print q.lines[1].points

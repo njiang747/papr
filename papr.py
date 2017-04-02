@@ -6,7 +6,7 @@ import ring_buffer
 import math
 
 screen = mouse.screensize()
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 screenCnt = np.array([])
 k_thresh = 125 # adjust for lighting
 
@@ -18,15 +18,14 @@ gap_thresh = 3
 bg_thresh = None
 ppr_quad = None
 f_thresh2 = None
-k_stable = 0.008
+k_stable = 0.01
 farthest = (0,0)
 
 # ~~Click detection methods and variables~~ #
 # Method that takes in 2 points and returns the distance between them
 curr_pos = (0,0)
 num_frames = 4
-zero_epsilon = 15
-upper_click_epsilon = 1000
+zero_epsilon = 30
 lower_click_epsilon = 60
 history = ring_buffer.Ring_Buffer(num_frames)
 
@@ -37,7 +36,7 @@ while(True):
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     thresh = cv2.threshold(blurred, k_thresh, 255, cv2.THRESH_BINARY)[1]
     edges = cv2.Canny(thresh, 50, 200)
-    (_,contours, _) = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    (contours, _) = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     cnts = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
 
     # loop over our contours
@@ -100,7 +99,7 @@ while(True):
                         if not found_0:
                             found_0 = True
                             found_0_pos = elem
-                    if found_0 and lower_click_epsilon < dist < upper_click_epsilon:
+                    if found_0 and lower_click_epsilon < dist:
                         found_up = True
                 if found_0 and found_up:
                     print "CLICK FOUNDDD"
