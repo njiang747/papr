@@ -7,7 +7,7 @@ import mouse
 screen = mouse.screensize()
 cap = cv2.VideoCapture(0)
 screenCnt = np.array([])
-k_thresh = 120 # adjust for lighting
+k_thresh = 125 # adjust for lighting
 
 # track when paper has stabilized
 counter = 0
@@ -17,6 +17,9 @@ gap_thresh = 3
 bg_thresh = None
 ppr_quad = None
 c_pos = (0,0)
+f_thresh2 = None
+k_stable = 0.008
+farthest = (0,0)
 
 while(True):
     ret,img = cap.read()
@@ -44,6 +47,7 @@ while(True):
                 counter = 0
                 screenCnt = approx
                 bg_thresh = np.zeros(thresh.shape, dtype=np.uint8)
+                f_thresh2 = np.zeros(thresh.shape, dtype=np.uint8)
                 ppr_quad = quad.Quad(map(lambda x: x[0], screenCnt))
                 cv2.fillConvexPoly(bg_thresh, ppr_quad.get_points(), 255)
                 cv2.polylines(bg_thresh, [ppr_quad.get_points()], True, 0, 5)
@@ -63,16 +67,21 @@ while(True):
     if bg_thresh != None:
         thresh2 = cv2.threshold(blurred, k_thresh+10, 255, cv2.THRESH_BINARY)[1]
         f_thresh = cv2.bitwise_xor(thresh2, bg_thresh, mask=bg_thresh)
-        ys, xs = np.where(f_thresh > 0)
-        if len(ys) > 0:
-            idx = np.argmax(ys)
-            farthest = (xs[idx], ys[idx])
-            cv2.circle(img, farthest, 5, (0, 255, 0), 3)
-            f_x, f_y = ppr_quad.convert(farthest)
-            mouse.mousemove(int(screen[0]*f_x), int(screen[1]*f_y))
-            mouse.mouseup(int(screen[0]*f_x), int(screen[1]*f_y))
-            mouse.mousedown(int(screen[0]*f_x), int(screen[1]*f_y))
-
+        dif_val = np.sum(cv2.bitwise_xor(f_thresh, f_thresh2, mask=bg_thresh))/(np.sum(f_thresh)+0.1)
+        f_thresh2 = f_thresh
+        # print dif_val
+        if dif_val > k_stable:
+            ys, xs = np.where(f_thresh > 0)
+            if len(ys) > 0:
+                idx = np.argmax(ys)
+                farthest = (xs[idx], ys[idx])
+                # print farthest
+                f_x, f_y = ppr_quad.convert(farthest)
+                mouse.mousemove(int(screen[0]*f_x), int(screen[1]*f_y))
+                # mouse.mouseup(int(screen[0]*f_x), int(screen[1]*f_y))
+                # mouse.mousedown(int(screen[0]*f_x), int(screen[1]*f_y))
+        # draw the fingertip
+        cv2.circle(img, farthest, 5, (0, 255, 0), 3)
         cv2.imshow('Frame',img)
     else:
         cv2.imshow('Frame',thresh)
