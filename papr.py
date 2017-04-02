@@ -79,6 +79,13 @@ while(True):
         f_thresh = cv2.bitwise_xor(thresh2, bg_thresh, mask=bg_thresh)
         dif_val = np.sum(cv2.bitwise_xor(f_thresh, f_thresh2, mask=bg_thresh))/(np.sum(f_thresh)+0.1)
         f_thresh2 = f_thresh
+        if scrolling:
+            d = scroll_pos[1] - curr_pos[1]
+            speed = max(3 * round(abs(d) * 30.0 / screen[1]), 10)
+            if d < 0:
+                mouse.scrolldown(speed)
+            else:
+                mouse.scrollup(speed)
         # print dif_val
         if dif_val > k_stable:
             ys, xs = np.where(f_thresh > 0)
@@ -87,14 +94,7 @@ while(True):
                 farthest = (xs[idx], ys[idx])
                 f_x, f_y = ppr_quad.convert(farthest)
                 curr_pos = (int(screen[0]*f_x), int(screen[1]*f_y))
-                if scrolling:
-                    d = scroll_pos[1] - curr_pos[1]
-                    speed = max(3*round(abs(d)*30.0 / screen[1]), 10)
-                    if d < 0:
-                        mouse.scrolldown(speed)
-                    else:
-                        mouse.scrollup(speed)
-                elif quad.p2p_dist(curr_pos,last_pos) < click_epsilon:
+                if not scrolling and quad.p2p_dist(curr_pos,last_pos) < click_epsilon:
                     mouse.mousemove(curr_pos[0], curr_pos[1])
                 last_pos = curr_pos
 
