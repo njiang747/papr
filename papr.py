@@ -24,7 +24,6 @@ farthest = (0,0)
 while(True):
     ret,img = cap.read()
     img = cv2.flip(img,1)
-
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     thresh = cv2.threshold(blurred, k_thresh, 255, cv2.THRESH_BINARY)[1]
