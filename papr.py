@@ -5,7 +5,7 @@ import mouse
 import ring_buffer
 
 screen = mouse.screensize()
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 screenCnt = np.array([])
 k_thresh = 125 # adjust for lighting
 
@@ -26,7 +26,7 @@ curr_pos = (0,0)
 last_pos = (0,0)
 num_frames = 3
 zero_epsilon = 30
-clickepsilon = 70
+click_epsilon = 70
 history = ring_buffer.Ring_Buffer(num_frames)
 
 while(True):
@@ -84,11 +84,9 @@ while(True):
                 farthest = (xs[idx], ys[idx])
                 f_x, f_y = ppr_quad.convert(farthest)
                 curr_pos = (int(screen[0]*f_x), int(screen[1]*f_y))
-                # mouse.mouseup(curr_pos[0], curr_pos[1])
-                if quad.p2p_dist(curr_pos,last_pos) < clickepsilon:
+                if quad.p2p_dist(curr_pos,last_pos) < click_epsilon:
                     mouse.mousemove(curr_pos[0], curr_pos[1])
                 last_pos = curr_pos
-                # mouse.mousedown(int(screen[0]*f_x), int(screen[1]*f_y))
 
                 # Check for click
                 found_0 = False
@@ -100,18 +98,17 @@ while(True):
                         if not found_0:
                             found_0 = True
                             found_0_pos = elem
-                    if found_0 and clickepsilon < dist:
+                    if found_0 and dist > click_epsilon:
                         found_up = True
                 if found_0 and found_up:
-                    print "CLICK FOUNDDD"
+                    print "========== CLICK FOUND =========="
                     history.print_me()
                     print curr_pos
-                    print "=========="
                     mouse.mousedown(found_0_pos[0],found_0_pos[1])
                     if not history.fast_click():
                         mouse.mouseup(found_0_pos[0],found_0_pos[1])
                     history.clear()
-                # Update history queue
+        # Update history queue
         history.enqueue(curr_pos)
         # draw the fingertip
         cv2.circle(img, farthest, 5, (0, 255, 0), 3)
