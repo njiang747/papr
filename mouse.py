@@ -1,5 +1,6 @@
 from AppKit import NSScreen
 from Quartz.CoreGraphics import CGEventCreateMouseEvent
+from Quartz.CoreGraphics import CGEventCreateScrollWheelEvent
 from Quartz.CoreGraphics import CGEventPost
 from Quartz.CoreGraphics import kCGEventMouseMoved
 from Quartz.CoreGraphics import kCGEventLeftMouseDown
@@ -7,6 +8,7 @@ from Quartz.CoreGraphics import kCGEventLeftMouseUp
 from Quartz.CoreGraphics import kCGEventLeftMouseDragged
 from Quartz.CoreGraphics import kCGMouseButtonLeft
 from Quartz.CoreGraphics import kCGHIDEventTap
+import time
 
 def screensize():
     w = NSScreen.mainScreen().frame().size.width
@@ -37,3 +39,11 @@ def mouseclick(posx,posy):
 def mousedrag(posx,posy):
     drag = CGEventCreateMouseEvent(None, kCGEventLeftMouseDragged, (posx, posy), 0)
     CGEventPost(kCGHIDEventTap, drag)
+
+def scrolldown(speed):
+    scroll = CGEventCreateScrollWheelEvent(None, 0, 1, -speed)
+    CGEventPost(kCGHIDEventTap, scroll)
+
+def scrollup(speed):
+    scroll = CGEventCreateScrollWheelEvent(None, 0, 1, speed)
+    CGEventPost(kCGHIDEventTap, scroll)

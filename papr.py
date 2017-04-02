@@ -3,9 +3,10 @@ import numpy as np
 import quad
 import mouse
 import ring_buffer
+import math
 
 screen = mouse.screensize()
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 screenCnt = np.array([])
 k_thresh = 125 # adjust for lighting
 
@@ -28,6 +29,8 @@ num_frames = 3
 zero_epsilon = 30
 click_epsilon = 70
 history = ring_buffer.Ring_Buffer(num_frames)
+scrolling = False
+scroll_pos = (0,0)
 
 while(True):
     ret,img = cap.read()
@@ -84,7 +87,14 @@ while(True):
                 farthest = (xs[idx], ys[idx])
                 f_x, f_y = ppr_quad.convert(farthest)
                 curr_pos = (int(screen[0]*f_x), int(screen[1]*f_y))
-                if quad.p2p_dist(curr_pos,last_pos) < click_epsilon:
+                if scrolling:
+                    d = scroll_pos[1] - curr_pos[1]
+                    speed = max(3*round(abs(d)*30.0 / screen[1]), 10)
+                    if d < 0:
+                        mouse.scrolldown(speed)
+                    else:
+                        mouse.scrollup(speed)
+                elif quad.p2p_dist(curr_pos,last_pos) < click_epsilon:
                     mouse.mousemove(curr_pos[0], curr_pos[1])
                 last_pos = curr_pos
 
@@ -104,9 +114,14 @@ while(True):
                     print "========== CLICK FOUND =========="
                     history.print_me()
                     print curr_pos
-                    mouse.mousedown(found_0_pos[0],found_0_pos[1])
-                    if not history.fast_click():
+                    if not scrolling:
+                        mouse.mousedown(found_0_pos[0],found_0_pos[1])
                         mouse.mouseup(found_0_pos[0],found_0_pos[1])
+                    elif scrolling:
+                        scrolling = False
+                    if not history.fast_click():
+                        scrolling = True
+                        scroll_pos = curr_pos
                     history.clear()
         # Update history queue
         history.enqueue(curr_pos)
