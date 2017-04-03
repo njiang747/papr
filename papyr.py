@@ -3,10 +3,9 @@ import numpy as np
 import quad
 import mouse
 import ring_buffer
-import math
 
 screen = mouse.screensize()
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 screenCnt = np.array([])
 k_thresh = 125 # adjust for lighting
 
@@ -111,6 +110,13 @@ while(True):
                     if found_0 and dist > click_epsilon:
                         found_up = True
                 if found_0 and found_up:
+                    cv2.circle(img, farthest, 5, (0, 255, 0), 3)
+                    cv2.imwrite('img/img.jpg', img)
+                    cv2.imwrite('img/gray.jpg', gray)
+                    cv2.imwrite('img/thresh.jpg', thresh)
+                    cv2.imwrite('img/edges.jpg', edges)
+                    cv2.imwrite('img/bg_thresh.jpg', bg_thresh)
+                    cv2.imwrite('img/f_thresh.jpg', f_thresh)
                     print "========== CLICK FOUND =========="
                     history.print_me()
                     print curr_pos
